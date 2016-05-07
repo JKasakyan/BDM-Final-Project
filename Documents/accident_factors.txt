@@ -1,0 +1,48 @@
+Motor vehicle accident dataset: https://datahub.cusp.nyu.edu/dataset/h9gi-nx95
+
+Types of factors:
+Accelerator Defective
+Aggressive Driving/Road Rage
+Alcohol Involvement
+Animals Action
+Backing Unsafely
+Brakes Defective
+Cell Phone (hands-free)
+Cell Phone (hand-held)
+Driver Inattention/Distraction
+Driver Inexperience
+Drugs (Illegal)
+Failure to Keep Right
+Failure to Yield Right-of-Way
+Fatigued/Drowsy
+Fell Asleep
+Following Too Closely
+Glare
+Headlights Defective
+Illness
+Lane Marking Improper/Inadequate
+Lost Consciousness
+Obstruction/Debris
+Other Electronic Device
+Other Lighting Defects
+Other Vehicular
+Outside Car Distraction
+Oversized Vehicle
+Passing or Lane Usage Improper
+Passenger Distraction
+Pavement Slippery
+Pavement Defective
+Pedestrian/Bicyclist/Other Pedestrian Error/Confusion
+Physical Disability
+Prescription Medication
+Reaction to Other Uninvolved Vehicle
+Steering Failure
+Tire Failure/Inadequate
+Tow Hitch Defective
+Traffic Control Device Improper/Non-Working
+Traffic Control Disregarded
+Turning Improperly
+Unsafe Lane Changing
+Unsafe Speed
+Unspecified
+View Obstructed/Limited
