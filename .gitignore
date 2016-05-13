@@ -1,4 +1,12 @@
 *.docx
 Documents/datasets.txt
 Datasets/
-Practice/
+*/metastore_db
+*.ipynb_checkpoints
+*.log
+*.crc
+*_SUCCESS
+*.pyc
+*__init__.py
+*/Results
+*.ipynb

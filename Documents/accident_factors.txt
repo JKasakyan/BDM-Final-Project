@@ -28,14 +28,15 @@ Other Lighting Defects
 Other Vehicular
 Outside Car Distraction
 Oversized Vehicle
-Passing or Lane Usage Improper
 Passenger Distraction
-Pavement Slippery
+Passing or Lane Usage Improper
 Pavement Defective
+Pavement Slippery
 Pedestrian/Bicyclist/Other Pedestrian Error/Confusion
 Physical Disability
 Prescription Medication
 Reaction to Other Uninvolved Vehicle
+Shoulders Defective/Improper
 Steering Failure
 Tire Failure/Inadequate
 Tow Hitch Defective
@@ -46,3 +47,4 @@ Unsafe Lane Changing
 Unsafe Speed
 Unspecified
 View Obstructed/Limited
+Windshield Inadequate

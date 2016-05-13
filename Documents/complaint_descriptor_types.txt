@@ -1,0 +1,86 @@
+Blocked - Construction
+Bracket Arm Bent
+Bracket Arm Broken
+Bracket Arm Loose
+Bracket Arm Missing
+Bus Stop
+Cave-in
+Construction
+Control Panel Damaged
+Crash Cushion Defect
+Crash Cushion Defect Street
+Defacement
+Defective Hardware
+Depression Maintenance
+Detour
+Do Not Block the Box
+Do Not Enter
+Failed Street Repair
+Fire Alarm Lamp Missing
+Fire Alarm Lamp Out
+Fire Globe Missing
+Fixture/Luminaire Damaged
+Fixture/Luminaire Door Open
+Fixture/Luminaire Hanging
+Fixture/Luminaire Missing
+Fixture/Luminaire Out Of Position
+Flood Light Lamp Cycling
+Flood Light Lamp Dayburning
+Flood Light Lamp Dim
+Flood Light Lamp Missing
+Flood Light Lamp Out
+Foreign Attachment On Lamppost
+Foreign Attachment On Wood Pole
+General Bad Condition
+Glassware Broken
+Glassware Hanging
+Glassware Missing
+Guard Rail - Street
+Honorary
+Hummock
+In-Line Fuse Missing
+Lamppost Base Door/Cover Damaged
+Lamppost Base Door/Cover Missing
+Lamppost Base Door/Cover Open
+Lamppost Damaged
+Lamppost Knocked Down
+Lamppost Leaning
+Lamppost Missing
+Lamppost Wire Exposed
+Line/Marking - After Repaving
+Line/Marking - After Repaving Street
+Line/Marking - Faded
+Maintenance Cover
+Multiple St Lts Dayburning
+Multiple Street Lights Out
+New Con Ed Service Request
+No Idling
+No Parking Standing Stopping
+One Way
+Photocell (PEC) Missing
+Plate Condition - Noisy
+Plate Condition - Open
+Plate Condition - Shifted
+Pothole
+Rough Pitted or Cracked Roads
+School Crossing
+Speed Limit
+St Name - Attached to Pole
+St Name - Over Intersection
+Stop
+Street Cleaning - ASP
+Street Light Cycling
+Street Light Dayburning
+Street Light Lamp Dim
+Street Light Lamp Missing
+Street Light Out
+Strip Paving
+Time Clock Maladjusted
+Traffic Signal Light
+Unsafe Worksite
+Wear and Tear
+Wood Pole Damaged
+Wood Pole Knocked Down
+Wood Pole Leaning
+Wood Pole Wires Exposed
+Yield
