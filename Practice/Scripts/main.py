@@ -2,6 +2,7 @@
 # hdfs:///gws/classes/bdma/ccny/groups/3/311_Service_Requests_from_2010_to_Present.csv
 
 import sys
+from pyspark import SparkContext
 
 def main(sc, accident_csv, three_one_one_csv):
     from Police_Reports import get_rdd as get_accident_rdd
@@ -65,6 +66,7 @@ def main(sc, accident_csv, three_one_one_csv):
     joined_rdd.mapPartitions(mapper).map(toCSVLine).coalesce(1).saveAsTextFile("./Results/final_results")
 
 if __name__ == "__main__":
+        sc = SparkContext()
         arguments = sys.argv
         accident_csv = arguments[1]
         three_one_one_csv = arguments[2]

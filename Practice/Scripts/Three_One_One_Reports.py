@@ -1,9 +1,9 @@
 
-def get_rdd(sc):
+def get_rdd(sc, three_one_one_csv):
     from datetime import datetime
     from dateutil.parser import parse
     from heapq import nlargest
-    rdd = sc.textFile("../Datasets/311_Service_Requests_from_2010_to_Present.csv")
+    rdd = sc.textFile(three_one_one_csv)
     header = rdd.first()
 
     def select_fields(records):

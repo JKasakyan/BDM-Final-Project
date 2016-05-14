@@ -1,8 +1,8 @@
-def get_rdd(sc):
+def get_rdd(sc, accident_csv):
     from datetime import datetime
     from dateutil.parser import parse
     from heapq import nlargest
-    accident_rdd = sc.textFile('../Datasets/NYPD_Motor_Vehicle_Collisions.csv', use_unicode=False)
+    accident_rdd = sc.textFile(accident_csv, use_unicode=False)
     def my_format(records):
         """
         Clean accident data to fit schema
