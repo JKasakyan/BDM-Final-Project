@@ -67,4 +67,5 @@ if __name__ == "__main__":
         arguments = sys.argv
         accident_csv = arguments[1]
         three_one_one_csv = arguments[2]
+        vehicle_count_csv = arguments[3]
         main(sc, accident_csv, three_one_one_csv)

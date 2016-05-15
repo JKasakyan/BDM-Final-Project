@@ -17,3 +17,13 @@ Tasks derived from objectives:
 
 See Documents/Kasakyan_James_Project_Proposal.pdf for more information.
 NYS DMV New York City Crash Summaries https://dmv.ny.gov/org/about-dmv/statistical-summaries
+
+## Datasets used
+Traffic volume on NYC roadways during 2012-2013
+https://data.cityofnewyork.us/NYC-BigApps/Traffic-Volume-Counts-2012-2013-/p424-amsu
+
+NYPD motor vehicle accident reports from 2012-Present
+https://data.cityofnewyork.us/Public-Safety/NYPD-Motor-Vehicle-Collisions/h9gi-nx95
+
+311 calls from 2010-Present
+https://data.cityofnewyork.us/Social-Services/311-Service-Requests/fvrb-kbbt

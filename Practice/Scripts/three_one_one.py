@@ -1,5 +1,11 @@
 
 def get_rdd(sc, three_one_one_csv):
+    """
+    sc is SparkContext
+    count_csv_path is relative path to location of csv produced by running
+    generate_vehicle_count_csv.py
+    """
+
     from datetime import datetime
     from dateutil.parser import parse
     from heapq import nlargest
@@ -15,6 +21,7 @@ def get_rdd(sc, three_one_one_csv):
             fields = record.split(',')
             complaint_type = fields[5]
             zip_code = fields[8]
+            city = fields[16]
             try:
                 date_parsed = parse(fields[1])
             except ValueError:
@@ -28,13 +35,16 @@ def get_rdd(sc, three_one_one_csv):
                 elif "Street Sign" in complaint_type:
                     zip_code = fields[10]
                     descriptor = "{} {} {}".format(fields[6], fields[7], fields[8])
+                    city = fields[18]
                 else:
                     zip_code = fields[9]
                     descriptor = "{} {}".format(fields[6], fields[7])
-            if (first_day_2012 <= date_parsed <= last_day_2013 and zip_code != "" and "Street" in complaint_type and "Noise" not in complaint_type):
-                yield (str(zip_code), (str(complaint_type).upper(), str(descriptor)))
+                    city = fields[17]
 
-    filtered_rdd = rdd.mapPartitions(select_fields)
+            if (first_day_2012 <= date_parsed <= last_day_2013 and zip_code != "" and "Street" in complaint_type and "Noise" not in complaint_type):
+                yield (str(zip_code), (str(complaint_type).upper(), str(descriptor), str(city)))
+
+    filtered_rdd = rdd.sample(False, .001).mapPartitions(select_fields)
 
     def seqOp(agg_dict, record):
         complaint_type = record[0]
@@ -42,11 +52,13 @@ def get_rdd(sc, three_one_one_csv):
         agg_dict["total_complaints"] = agg_dict.get("total_complaints", 0) + 1
         agg_dict[complaint_type] = agg_dict.get(complaint_type, 0) + 1
         agg_dict[descriptor] = agg_dict.get(descriptor, 0) + 1
+        agg_dict['city'] = record[2]
         return agg_dict
 
     def combOp (dict1, dict2):
         for key, value in dict1.items():
-            dict2[key] = dict2.get(key, 0) + value
+            if key != "city":
+                dict2[key] = dict2.get(key, 0) + value
         return dict2
 
     zip_complaints_rdd = filtered_rdd.aggregateByKey({}, seqOp, combOp)
@@ -55,6 +67,7 @@ def get_rdd(sc, three_one_one_csv):
         for zip_tuple in zip_tuples:
             zip_code = zip_tuple[0]
             zip_dict = zip_tuple[1]
+            city = zip_dict["city"]
             total_complaints = float(zip_dict['total_complaints'])
             complaints_dict = {k:v for (k,v) in zip_dict.items() if k.isupper() }
             descriptors_dict = {k:v for (k,v) in zip_dict.items() if not k.isupper() and k != 'total_complaints'}
@@ -98,11 +111,12 @@ def get_rdd(sc, three_one_one_csv):
                 desc3 = "{}: {}: {}%".format(top_n_descriptors[2][0], top_n_descriptors[2][1], round(top_n_descriptors[2][1]/total_complaints * 100, 2))
                 desc4 = "{}: {}: {}%".format(top_n_descriptors[3][0], top_n_descriptors[3][1], round(top_n_descriptors[3][1]/total_complaints * 100, 2))
                 desc5 = "{}: {}: {}%".format(top_n_descriptors[4][0], top_n_descriptors[4][1], round(top_n_descriptors[4][1]/total_complaints * 100, 2))
-            yield (zip_code, (int(total_complaints), comp1, comp2, comp3, desc1, desc2, desc3, desc4, desc5))
+            yield (zip_code, (int(total_complaints), comp1, comp2, comp3, desc1, desc2, desc3, desc4, desc5, city))
 
     def combine(agg_dict, record_dict):
         for key, value in record_dict.items():
-            agg_dict[key] = agg_dict.get(key, 0) + value
+            if key != "city":
+                agg_dict[key] = agg_dict.get(key, 0) + value
         return agg_dict
 
     aggregate_dict = zip_complaints_rdd.map(lambda x: x[1]) \
