@@ -1,11 +1,11 @@
 import sys
 
-from Scripts.police_reports import get_rdd as get_accident_rdd
-from Scripts.three_one_one import get_rdd as get_three_one_one_rdd
-from Scripts.vehicle_volume_count import get_rdd as get_vehicle_rdd
+from police_reports import get_rdd as get_accident_rdd
+from three_one_one import get_rdd as get_three_one_one_rdd
+from vehicle_volume_count import get_rdd as get_vehicle_rdd
 
-def main(sc, sqlContext, path_to_accident_csv, path_to_three_one_one_csv, path_to_count_csv)
-    accident_rdd      = get_accident_rdd(sc, path_to_accident_csv", download=True, output_path="FinalProjectOutputs")
+def main(sc, sqlContext, path_to_accident_csv, path_to_three_one_one_csv, path_to_count_csv):
+    accident_rdd      = get_accident_rdd(sc, path_to_accident_csv, download=True, output_path="FinalProjectOutputs")
     three_one_one_rdd = get_three_one_one_rdd(sc, path_to_three_one_one_csv, download=True, output_path="FinalProjectOutputs")
     count_rdd = get_vehicle_rdd(sc, path_to_count_csv, download=True, output_path="FinalProjectOutputs")
 
@@ -64,7 +64,7 @@ def main(sc, sqlContext, path_to_accident_csv, path_to_three_one_one_csv, path_t
 
     full_rdd = joined_rdd.mapPartitions(mapper)
 
-    from pyspark.sql.types import *
+    from pyspark.sql.types import StringType, FloatType, IntegerType, StructField, StructType
     fields = [StructField("", StringType(), True) for _ in range(0, 27)]
     fields[0].name = "City"
 
@@ -244,6 +244,7 @@ def main(sc, sqlContext, path_to_accident_csv, path_to_three_one_one_csv, path_t
     sc.parallelize(aggregation).saveAsTextFile("FinalProjectOutputs/totals/aggregations")
 
 if __name__ == "__main__":
+    import pyspark
     from pyspark.sql import SQLContext
     sc = pyspark.SparkContext()
     sqlContext = pyspark.SQLContext(sc)
