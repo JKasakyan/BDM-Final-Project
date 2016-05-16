@@ -9,7 +9,7 @@ def main(sc, input_location, output_location):
     input_location is relative path to NYC OpenData's Traffic_Volume_Counts__2012-2013.csv
     output_location is relative path for directory where output csv will be saved
     """
-    volume_rdd = sc.textFile("../Datasets/Traffic_Volume_Counts__2012-2013.csv", use_unicode=False).cache()
+    volume_rdd = sc.textFile(input_location, use_unicode=False).cache()
     header = volume_rdd.first()
 
     def format_street_name(name):
@@ -162,7 +162,7 @@ def main(sc, input_location, output_location):
     def toCSVLine(data):
         return ','.join(str(d) for d in data)
 
-    seg_group_volume_rdd.mapPartitions(geomMap).map(toCSVLine).coalesce(1).saveAsTextFile("./Results/volume_results")
+    seg_group_volume_rdd.mapPartitions(geomMap).map(toCSVLine).coalesce(1).saveAsTextFile(output_location)
 
 if __name__ == "__main__":
     sc = pyspark.SparkContext()

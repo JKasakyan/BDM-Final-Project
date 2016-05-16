@@ -1,4 +1,11 @@
-def get_rdd(sc, accident_csv):
+
+def get_rdd(sc, accident_csv, download=False, output_path=None):
+    """
+    sc is a SparkContext object
+    accident_csv: relative path to the location containing the file NYPD_Motor_Vehicle_Collisions.csv
+    download: Boolean indicating whether the results will be downloaded. Default is False.
+    output_path is the relative path to the directory where the results will be saved. Only needed if download=True. Default is None.
+    """
     from datetime import datetime
     from dateutil.parser import parse
     from heapq import nlargest
@@ -259,6 +266,7 @@ def get_rdd(sc, accident_csv):
                   veh1, veh2, veh3, veh4, veh5))
 
     zip_statistics_rdd = result_rdd.mapPartitions(topn)
-    zip_statistics_rdd.coalesce(1).saveAsTextFile('./Results/police_report_results')
-    sc.parallelize(totals).coalesce(1).saveAsTextFile('./Results/police_report_totals')
+    if download:
+        zip_statistics_rdd.coalesce(1).saveAsTextFile(output_path + '/results/zip_NYPD_accident_report_2012_2013')
+        sc.parallelize(totals).coalesce(1).saveAsTextFile(output_path + '/totals/NYPD_accident_2012_2013')
     return zip_statistics_rdd

@@ -1,14 +1,21 @@
-def get_rdd(sc, count_csv_path):
+
+def get_rdd(sc, count_csv_path, download=False, output_path=None):
     """
     sc is SparkContext
-    count_csv_path is relative path to location of csv produced by running
-    generate_vehicle_count_csv.py
+
+    count_csv_path is relative path to location of csv produced by running generate_vehicle_count_csv.py.
+    Alternatively, use zip_veh_count.csv located in Datasets folder.
+
+    download: Boolean indicating whether the results will be downloaded. Default is False.
+
+    output_path is the relative path to the directory where the results will be saved. Only needed if download=True. Default is None.
     """
+
     zip_num_vehicles_rdd = sc.textFile(count_csv_path)
     header = zip_num_vehicles_rdd.first()
     def map_multiple_zip(records):
         """
-        Some results are of form 11220;11204,39294 or 10309: 10312. Need to count as two separate records. One record is NY 10026,12496, duplicate
+        Some results are of form 11220;11204,39294, 34333 or 10309: 10312, 50033. Need to count as two separate records. One record is NY 10026,12496, duplicate
         of record before it
         """
         for record in records:
@@ -16,6 +23,10 @@ def get_rdd(sc, count_csv_path):
                 fields = record.split(',')
                 zip_code = fields[0]
                 vehicle_count = int(fields[1])
+                samples = int(fields[2])
+                half_vehicle_count = vehicle_count / 2
+                half_samples = samples / 2
+
                 if "NY" in zip_code:
                     # Duplicate record with incorrect format
                     continue
@@ -23,32 +34,44 @@ def get_rdd(sc, count_csv_path):
                     # Of form 11220;11204,39294
                     zip1 = zip_code.split(';')[0].strip()
                     zip2 = zip_code.split(';')[1].strip()
-                    half_count = vehicle_count / 2
-                    yield (zip1, (half_count, 1))
-                    yield(zip2, (half_count, 1))
+                    yield (zip1, (half_vehicle_count, half_samples, 1))
+                    yield (zip2, (half_vehicle_count, half_samples, 1))
                 elif ':' in zip_code:
                     # Of form 10309: 10312
                     zip1 = zip_code.split(':')[0].strip()
                     zip2 = zip_code.split(':')[1].strip()
-                    half_count = vehicle_count / 2
-                    yield (zip1, (half_count, 1))
-                    yield(zip2, (half_count, 1))
+                    half_vehicle_count = vehicle_count / 2
+                    yield (zip1, (half_vehicle_count, half_samples, 1))
+                    yield(zip2, (half_vehicle_count, half_samples, 1))
                 else:
-                    yield (zip_code, (vehicle_count, 1))
+                    yield (zip_code, (vehicle_count, samples, 1))
 
     zip_key_rdd = zip_num_vehicles_rdd.mapPartitions(map_multiple_zip)
 
-    def myReducer(count, tup):
-        print ("count = {}\n".format(count))
-        print ("tup = {}\n".format(tup))
-        return count + tup[0]
+    def dict_mapper(zip_tuples):
+        for zip_tuple in zip_tuples:
+            zip_code = zip_tuple[0]
+            zip_dict = zip_tuple[1]
+            vehicle_count = zip_dict['vehicle_count']
+            samples = zip_dict['samples']
+            days_in_2012_2013 = 731 # 2012 was a leap year
+            vehicle_count_2012_2013 = vehicle_count / samples * days_in_2012_2013
+            yield (zip_code, vehicle_count_2012_2013)
 
-    def seqOp(count, tup):
-        return count + tup[0]
+    def seqOp(dict1, tup):
+        vehicle_count = tup[0]
+        samples = tup[1]
+        dict1['vehicle_count'] = dict1.get('vehicle_count', 0) + vehicle_count
+        dict1['samples'] = dict1.get('samples', 0) + samples
+        return dict1
 
-    def combOp(count1, count2):
-        return count1 + count2
+    def combOp(dict1, dict2):
+        for key, value in dict1.items():
+            dict2[key] = dict2.get(key, 0) + value
+            return dict2
 
-    result_rdd = zip_key_rdd.aggregateByKey(0, seqOp, combOp)
-    result_rdd.coalesce(1).saveAsTextFile("./Results/vehicle_volume_results")
+    result_rdd = zip_key_rdd.aggregateByKey({}, seqOp, combOp).mapPartitions(dict_mapper)
+
+    if download:
+        result_rdd.coalesce(1).saveAsTextFile(output_path + "/results/zip_traffic_volume_2012_2013")
     return result_rdd

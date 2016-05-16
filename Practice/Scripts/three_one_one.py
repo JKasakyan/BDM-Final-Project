@@ -1,9 +1,17 @@
 
-def get_rdd(sc, three_one_one_csv):
+def get_rdd(sc, three_one_one_csv, download=False, output_path=None):
     """
-    sc is SparkContext
-    count_csv_path is relative path to location of csv produced by running
-    generate_vehicle_count_csv.py
+    sc is a SparkContext object
+
+    three_one_one_csv: relative path to the location containing the
+    file 311_Service_Requests_from_2010_to_Present.csv
+
+    download: Boolean indicating whether the results will be downloaded.
+    Default is False.
+
+    output_path is the relative path to the directory where the results will be
+    saved. Only needed if download=True.
+    Default is None.
     """
 
     from datetime import datetime
@@ -41,10 +49,10 @@ def get_rdd(sc, three_one_one_csv):
                     descriptor = "{} {}".format(fields[6], fields[7])
                     city = fields[17]
 
-            if (first_day_2012 <= date_parsed <= last_day_2013 and zip_code != "" and "Street" in complaint_type and "Noise" not in complaint_type):
+            if (first_day_2012 <= date_parsed <= last_day_2013 and zip_code != "" and city != "" and "Street" in complaint_type and "Noise" not in complaint_type):
                 yield (str(zip_code), (str(complaint_type).upper(), str(descriptor), str(city)))
 
-    filtered_rdd = rdd.sample(False, .001).mapPartitions(select_fields)
+    filtered_rdd = rdd.sample(False, .0001).mapPartitions(select_fields)
 
     def seqOp(agg_dict, record):
         complaint_type = record[0]
@@ -70,7 +78,7 @@ def get_rdd(sc, three_one_one_csv):
             city = zip_dict["city"]
             total_complaints = float(zip_dict['total_complaints'])
             complaints_dict = {k:v for (k,v) in zip_dict.items() if k.isupper() }
-            descriptors_dict = {k:v for (k,v) in zip_dict.items() if not k.isupper() and k != 'total_complaints'}
+            descriptors_dict = {k:v for (k,v) in zip_dict.items() if not k.isupper() and k != 'total_complaints' and k != 'city'}
             # comp1 comp2 comp3 represent top three complaints for zip code
             # desc1 desc2 desc3 desc4 desc5 represent top three descriptors of complaints for zip code
             comp1 = ''
@@ -124,6 +132,7 @@ def get_rdd(sc, three_one_one_csv):
     totals = sorted(aggregate_dict.items(), key=lambda x: x[1], reverse=True)
 
     three_one_one_statistics_rdd = zip_complaints_rdd.mapPartitions(topn)
-    three_one_one_statistics_rdd.coalesce(1).saveAsTextFile("./Results/three_one_one_results")
-    sc.parallelize(totals).coalesce(1).saveAsTextFile("./Results/three_one_one_totals")
+    if download:
+        three_one_one_statistics_rdd.coalesce(1).saveAsTextFile(output_path + "/results/zip_three_one_one_2012_2013")
+        sc.parallelize(totals).coalesce(1).saveAsTextFile(output_path + "/totals/three_one_one_2012_2013")
     return three_one_one_statistics_rdd
