@@ -52,7 +52,7 @@ def get_rdd(sc, three_one_one_csv, download=False, output_path=None):
             if (first_day_2012 <= date_parsed <= last_day_2013 and zip_code != "" and city != "" and "Street" in complaint_type and "Noise" not in complaint_type):
                 yield (str(zip_code), (str(complaint_type).upper(), str(descriptor), str(city)))
 
-    filtered_rdd = rdd.sample(False, .0001).mapPartitions(select_fields)
+    filtered_rdd = rdd.mapPartitions(select_fields)
 
     def seqOp(agg_dict, record):
         complaint_type = record[0]
