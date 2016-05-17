@@ -15,15 +15,32 @@ Tasks derived from objectives:
   *  Analyze type of traffic (commercial, passenger, taxi)
 * Plot areas labeled as hazardous, along with profile for area (most common vehicle type, most common 311 traffic/street condition related complaint)
 
-See Documents/Kasakyan_James_Project_Proposal.pdf for more information.
+See [Project Proposal](/Documents/Kasakyan_James_Project_Proposal.pdf) for more information.
 NYS DMV New York City Crash Summaries https://dmv.ny.gov/org/about-dmv/statistical-summaries
 
-## Datasets used
-Traffic volume on NYC roadways during 2012-2013
-https://data.cityofnewyork.us/NYC-BigApps/Traffic-Volume-Counts-2012-2013-/p424-amsu
+## Instructions for spark submit:
 
-NYPD motor vehicle accident reports from 2012-Present
-https://data.cityofnewyork.us/Public-Safety/NYPD-Motor-Vehicle-Collisions/h9gi-nx95
+``` $ spark-submit \
+--name Group 3 Final Project \
+--num-executors 64 \
+--py-files police_reports.py,three_one_one.py,vehicle_volume_count.py \
+main.py path/to/NYPD_Motor_Vehicle_Collisions.csv path/to/311_Service_Requests_from_2010_to_Present.csv \
+path/to/output_from_script_generate_vehicle_count_csv ```
 
-311 calls from 2010-Present
-https://data.cityofnewyork.us/Social-Services/311-Service-Requests/fvrb-kbbt
+
+## Instructions for standard python:
+``` $ python main.py path/to/NYPD_Motor_Vehicle_Collisions.csv path/to/311_Service_Requests_from_2010_to_Present.csv path/to/output_from_script_generate_vehicle_count_csv```
+
+***
+
+## Datasets
+
+[NYPD_Motor_Vehicle_Collisions](https://data.cityofnewyork.us/Public-Safety/NYPD-Motor-Vehicle-Collisions/h9gi-nx95)
+
+[311_Service_Requests_from_2010_to_Present](https://data.cityofnewyork.us/Social-Services/311-Service-Requests/fvrb-kbbt)
+
+[Traffic_Volume_Counts__2012-2013*](https://data.cityofnewyork.us/NYC-BigApps/Traffic-Volume-Counts-2012-2013-/p424-amsu)
+
+**NOTE: This file is the input to generate_vehicle_count_count_csv.py. That script requires the
+geopy package and the querying of the Nominatim geodatabase for ~900 records is lengthy. For convenience,
+the output of that script is available in the Datasets folder.*
