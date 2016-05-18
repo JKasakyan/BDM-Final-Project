@@ -266,7 +266,31 @@ def get_rdd(sc, accident_csv, download=False, output_path=None):
                   veh1, veh2, veh3, veh4, veh5))
 
     zip_statistics_rdd = result_rdd.mapPartitions(topn)
+
     if download:
-        zip_statistics_rdd.coalesce(1).saveAsTextFile(output_path + '/results/zip_NYPD_accident_report_2012_2013')
-        sc.parallelize(totals).coalesce(1).saveAsTextFile(output_path + '/totals/NYPD_accident_2012_2013')
+        def add_header(records):
+            for record in records:
+                if record == first_totals:
+                    yield totals_header
+                    yield record
+                elif record == first_results:
+                    yield results_header
+                    yield record
+                else:
+                    yield record
+
+        def to_csv_line(data):
+            return ','.join(str(d) for d in data)
+
+        first_results = zip_statistics_rdd.first()
+        print("FIRST RESULTS: {}".format(first_results))
+        totals_rdd = sc.parallelize(totals)
+        first_totals = totals_rdd.first()
+        print("FIRST TOTALS: {}".format(first_totals))
+        totals_header = ["Category, Count"]
+        results_header = ["Zip_code, Total_accidents, Total_vehicles_in_accidents, Total_persons_injured, Total_persons_killed, Total_pedestrians_injured, Total_pedestrians_killed, Total_cyclists_injured, Total_cyclists_killed, Total_motorists_injured, Total_motorists_killed, Top_factor_1, Top_factor_2, Top_factor_3, Top_factor_4, Top_factor_5, Top_vehicle_type_1, Top_vehicle_type_2, Top_vehicle_type_3, Top_vehicle_type_4, Top_vehicle_type_5"]
+
+        zip_statistics_rdd.mapPartitions(add_header).map(to_csv_line).coalesce(1).saveAsTextFile(output_path + '/results/zip_NYPD_accident_report_2012_2013')
+        totals_rdd.mapPartitions(add_header).map(to_csv_line).coalesce(1).saveAsTextFile(output_path + '/totals/NYPD_accident_2012_2013')
+
     return zip_statistics_rdd

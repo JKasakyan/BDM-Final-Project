@@ -71,7 +71,21 @@ def get_rdd(sc, count_csv_path, download=False, output_path=None):
             return dict2
 
     result_rdd = zip_key_rdd.aggregateByKey({}, seqOp, combOp).mapPartitions(dict_mapper)
-
+    first = result_rdd.first()
+    header = ["Zip_code, Vehicle_count_2012_2013"]
     if download:
-        result_rdd.coalesce(1).saveAsTextFile(output_path + "/results/zip_traffic_volume_2012_2013")
+        def add_header(records):
+            for record in records:
+                if record == first:
+                    yield header
+                    yield record
+                else:
+                    yield record
+
+        def to_csv_line(data):
+            return ','.join(str(d) for d in data)
+
+
+        result_rdd.mapPartitions(add_header).map(to_csv_line).coalesce(1).saveAsTextFile(output_path + "/results/zip_traffic_volume_2012_2013")
+
     return result_rdd

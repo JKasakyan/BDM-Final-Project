@@ -4,10 +4,10 @@ from police_reports import get_rdd as get_accident_rdd
 from three_one_one import get_rdd as get_three_one_one_rdd
 from vehicle_volume_count import get_rdd as get_vehicle_rdd
 
-def main(sc, sqlContext, path_to_accident_csv, path_to_three_one_one_csv, path_to_count_csv):
-    accident_rdd      = get_accident_rdd(sc, path_to_accident_csv, download=True, output_path="FinalProjectOutputs")
-    three_one_one_rdd = get_three_one_one_rdd(sc, path_to_three_one_one_csv, download=True, output_path="FinalProjectOutputs")
-    count_rdd = get_vehicle_rdd(sc, path_to_count_csv, download=True, output_path="FinalProjectOutputs")
+def main(sc, sqlContext, path_to_accident_csv, path_to_three_one_one_csv, path_to_count_csv, download=False):
+    accident_rdd      = get_accident_rdd(sc, path_to_accident_csv, download=download, output_path="FinalProjectOutputs")
+    three_one_one_rdd = get_three_one_one_rdd(sc, path_to_three_one_one_csv, download=download, output_path="FinalProjectOutputs")
+    count_rdd = get_vehicle_rdd(sc, path_to_count_csv, download=download, output_path="FinalProjectOutputs")
 
     joined_rdd        = count_rdd.join(accident_rdd.join(three_one_one_rdd))
 
@@ -216,13 +216,22 @@ def main(sc, sqlContext, path_to_accident_csv, path_to_three_one_one_csv, path_t
                   record[14], record[15], record[16], record[17], record[18], record[19], record[20], record[21],
                   record[22], record[23], record[24], record[25], record[26])
 
+    def add_header(records):
+        for record in records:
+            if record == first:
+                yield header
+                yield record
+            else:
+                yield record
 
-    final_rdd = full_rdd.mapPartitions(classify_mapper)
-
-    def toCSVLine(data):
+    def to_csv_line(data):
         return ','.join(str(d) for d in data)
 
-    final_rdd.map(toCSVLine).coalesce(1).saveAsTextFile("FinalProjectOutputs/results/final_result")
+    final_rdd = full_rdd.mapPartitions(classify_mapper)
+    first = final_rdd.first()
+    header = ["City, Zip_Code, Safety_classifier, Accidents_per_1000_veh, Injuries_per_1000_accidents, Deaths_per_1000_accidents, Vehicles_involved_per_accident, Total_num_accidents, Total_num_of_accident_veh, Top_factor_1, Top_factor_2, Top_factor_3, Top_factor_4, Top_factor_5, Top_vehicle_type_1, Top_vehicle_type_2, Top_vehicle_type_3, Top_vehicle_type_4, Top_vehicle_type_5, Top_street_complaint_1, Top_street_complaint_2, Top_street_complaint_3, Top_complaint_desc_1, Top_complaint_desc_2, Top_complaint_desc_3, Top_complaint_desc_4, Top_complaint_desc_5, Num_street_complaints"]
+
+    final_rdd.mapPartitions(add_header).map(to_csv_line).coalesce(1).saveAsTextFile("FinalProjectOutputs/results/final_result")
 
     sc.parallelize(top_10_accidents_per_1000_vehicles).coalesce(1).saveAsTextFile("FinalProjectOutputs/totals/top_ten/top_ten_accidents_per_1000_vehicles")
     sc.parallelize(top_10_injuries_per_1000_accidents).coalesce(1).saveAsTextFile("FinalProjectOutputs/totals/top_ten/top_ten_injuries_per_1000_accidents")
@@ -240,12 +249,18 @@ def main(sc, sqlContext, path_to_accident_csv, path_to_three_one_one_csv, path_t
                                                           new_df.Deaths.alias("Deaths per 1000 accidents"),
                                                           new_df.Vehicles.alias("Vehicles involved per accident")).collect())
 
-
-    sc.parallelize(aggregation).saveAsTextFile("FinalProjectOutputs/totals/aggregations")
+    sc.parallelize(aggregation).coalesce(1).saveAsTextFile("FinalProjectOutputs/totals/aggregations")
 
 if __name__ == "__main__":
     import pyspark
     from pyspark.sql import SQLContext
     sc = pyspark.SparkContext()
     sqlContext = pyspark.SQLContext(sc)
-    main(sc, sqlContext, sys.argv[1], sys.argv[2], sys.argv[3])
+    try:
+        if sys.argv[4].lower() == 'download':
+            download = True
+        else:
+            download=False
+    except:
+        download = False
+    main(sc, sqlContext, sys.argv[1], sys.argv[2], sys.argv[3], download=download)

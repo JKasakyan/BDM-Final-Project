@@ -1,5 +1,5 @@
 """
-This script outputs a csv that contains two columns, a zip code and number of accidents.
+This script outputs a csv that contains three columns: Zip_code, Sample_traffic_volume, Number_of_samples
 Can not be run on cluster due to restrictions on geopy.geocoders.Nominatim.
 """
 
@@ -69,28 +69,28 @@ def main(sc, input_location, output_location):
         seg_dict['from'] = seg_dict.get('from', from_address)
         seg_dict['to'] = seg_dict.get('to', to_address)
         seg_dict['vehicle_count'] = seg_dict.get('vehicle_count', 0) + vehicle_count
+        seg_dict['samples'] = seg_dict.get('samples', 0) + 1
 
         return seg_dict
 
     def combOp(seg_dict1, seg_dict2):
         seg_dict2['vehicle_count'] += seg_dict1.get('vehicle_count', 0)
+        seg_dict2['samples'] += seg_dict1.get('samples', 0)
         return seg_dict2
 
     seg_group_volume_rdd = volume_rdd_seg.aggregateByKey({}, seqOp, combOp)
-    seg_group_volume_rdd.collect()
 
     from geopy.geocoders import Nominatim
 
     def geomMap(records):
         geolocator = Nominatim(format_string="%s, NY", country_bias="USA", timeout=10)
         for record in records:
-            print record
-            print ("______________")
             seg_id = record[0]
             from_address = record[1]['from'].strip()
             to_address = record[1]['to'].strip()
             roadway = record[1]['roadway'].strip()
             vehicle_count = record[1]['vehicle_count']
+            samples = record[1]['samples']
 
             try:
                 roadway_dict = geolocator.geocode(roadway, addressdetails=True).raw
@@ -116,6 +116,9 @@ def main(sc, input_location, output_location):
                 roadway_postcode = roadway_address['postcode'].strip()
                 from_postcode = from_address['postcode'].strip()
                 to_postcode = to_address['postcode'].strip()
+                print record
+                print ("Roadway: {}, From: {}, To: {}".format(roadway_postcode, from_postcode, to_postcode))
+                print ("______________")
             except:
                 # No postcode field, skip this record
                 print ("SKIPPING {}".format(record))
@@ -126,44 +129,57 @@ def main(sc, input_location, output_location):
             to_postcode_count = vehicle_count
             half_vehicle_count = vehicle_count / 2
             one_third_vehicle_count = vehicle_count / 3
-            two_third_vehicle_count = 2 * (vehicle_count / 3)
+            two_third_vehicle_count = 2 * one_third_vehicle_count
+            half_samples = samples / 2
+            one_third_samples = samples / 3
+            two_third_samples = 2 * one_third_samples
 
             if from_postcode != to_postcode:
                 if roadway_postcode == from_postcode:
-                    from_postcode_count = two_third_vehicle_count
-                    to_postcode_count = one_third_vehicle_count
-
-                    yield(from_postcode, from_postcode_count)
-                    yield(to_postcode, to_postcode_count)
+                    yield(from_postcode, two_third_vehicle_count, two_third_samples)
+                    yield(to_postcode, one_third_vehicle_count, one_third_samples)
                 elif roadway_postcode == to_postcode:
                     to_postcode_count = two_third_vehicle_count
                     from_postcode_count = one_third_vehicle_count
 
-                    yield(from_postcode, from_postcode_count)
-                    yield(to_postcode, to_postcode_count)
+                    yield(from_postcode, one_third_vehicle_count, one_third_samples)
+                    yield(to_postcode, two_third_vehicle_count, two_third_samples)
                 else:
                     to_postcode_count = one_third_vehicle_count
                     from_postcode_count = one_third_vehicle_count
                     roadway_postcode_count = one_third_vehicle_count
 
-                    yield(from_postcode, from_postcode_count)
-                    yield(to_postcode, to_postcode_count)
-                    yield(roadway_postcode, roadway_postcode_count)
+                    yield(from_postcode, one_third_vehicle_count, one_third_samples)
+                    yield(to_postcode, one_third_vehicle_count, one_third_samples)
+                    yield(roadway_postcode, one_third_vehicle_count, one_third_samples)
             else:
                 # From and to postcode's agree
                 if roadway_postcode == from_postcode:
                     # All three agree
-                    yield(roadway_postcode, vehicle_count)
+                    yield(roadway_postcode, vehicle_count, samples)
                 else:
                     # Only from and to agree
-                    yield(from_postcode, two_third_vehicle_count)
-                    yield(roadway_postcode, one_third_vehicle_count)
+                    yield(from_postcode, two_third_vehicle_count, two_third_samples)
+                    yield(roadway_postcode, one_third_vehicle_count, one_third_samples)
 
-    def toCSVLine(data):
+    def add_header(records):
+        for record in records:
+            if record == first:
+                yield header
+                yield record
+            else:
+                yield record
+
+    def to_csv_line(data):
         return ','.join(str(d) for d in data)
 
-    seg_group_volume_rdd.mapPartitions(geomMap).map(toCSVLine).coalesce(1).saveAsTextFile(output_location)
+    zip_rdd = seg_group_volume_rdd.mapPartitions(geomMap)
+    first = zip_rdd.first()
+    header = ["Zip_code, Sample_traffic_volume, Number_of_samples"]
+    zip_rdd.mapPartitions(add_header).map(to_csv_line).coalesce(1).saveAsTextFile(output_location)
 
 if __name__ == "__main__":
+    import pyspark
+    import sys
     sc = pyspark.SparkContext()
-    main(sc, "../Datasets/Traffic_Volume_Counts__2012-2013.csv", "./Results/volume_results")
+    main(sc, sys.argv[1], sys.argv[2])

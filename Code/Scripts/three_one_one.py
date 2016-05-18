@@ -130,9 +130,29 @@ def get_rdd(sc, three_one_one_csv, download=False, output_path=None):
     aggregate_dict = zip_complaints_rdd.map(lambda x: x[1]) \
                                        .fold({}, combine)
     totals = sorted(aggregate_dict.items(), key=lambda x: x[1], reverse=True)
-
     three_one_one_statistics_rdd = zip_complaints_rdd.mapPartitions(topn)
+
     if download:
-        three_one_one_statistics_rdd.coalesce(1).saveAsTextFile(output_path + "/results/zip_three_one_one_2012_2013")
-        sc.parallelize(totals).coalesce(1).saveAsTextFile(output_path + "/totals/three_one_one_2012_2013")
+        def add_header(records):
+            for record in records:
+                if record == first_totals:
+                    yield totals_header
+                    yield record
+                elif record == first_results:
+                    yield results_header
+                    yield record
+                else:
+                    yield record
+
+        def to_csv_line(data):
+            return ','.join(str(d) for d in data)
+
+        first_results = three_one_one_statistics_rdd.first()
+        first_totals = sc.parallelize(totals).first()
+
+        totals_header = ["Category, Count"]
+        results_header = ["Zip_code, Total_complaints, Top_complaint_1, Top_complaint_2, Top_complaint_3, Top_complaint_description_1, Top_complaint_description_2, Top_complaint_description_3, Top_complaint_description_4, Top_complaint_description_5, City"]
+        three_one_one_statistics_rdd.mapPartitions(add_header, first_results).map(to_csv_line).coalesce(1).saveAsTextFile(output_path + "/results/zip_three_one_one_2012_2013")
+        sc.parallelize(totals).mapPartitions(add_header, first_totals).map(to_csv_line).coalesce(1).saveAsTextFile(output_path + "/totals/three_one_one_2012_2013")
+
     return three_one_one_statistics_rdd
