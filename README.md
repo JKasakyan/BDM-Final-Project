@@ -46,3 +46,8 @@ path/to/output_from_script_generate_vehicle_count_csv ```
 **NOTE: This file is the input to generate_vehicle_count_count_csv.py. That script requires the
 geopy package and the querying of the Nominatim geodatabase for ~900 records is lengthy. For convenience,
 the output of that script is available in the Datasets folder.*
+
+## Results
+
+See [Final Report] (/Documents/Kasakyan_James_Final_Report.pdf)
+View the [final mapping] (https://jameskasakyan.cartodb.com/viz/a612e2d2-1b34-11e6-a856-0e3ff518bd15/public_map) 
