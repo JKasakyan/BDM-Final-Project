@@ -49,5 +49,6 @@ the output of that script is available in the Datasets folder.*
 
 ## Results
 
-See [Final Report] (/Documents/Kasakyan_James_Final_Report.pdf)
-View the [final mapping] (https://jameskasakyan.cartodb.com/viz/a612e2d2-1b34-11e6-a856-0e3ff518bd15/public_map) 
+* [Final Report] (/Documents/Kasakyan_James_Final_Report.pdf)
+* [Raw results data] (/FinalProjectOutputs/results/final_result) 
+* View the [final mapping] (https://jameskasakyan.cartodb.com/viz/a612e2d2-1b34-11e6-a856-0e3ff518bd15/public_map) 
