@@ -20,16 +20,20 @@ NYS DMV New York City Crash Summaries https://dmv.ny.gov/org/about-dmv/statistic
 
 ## Instructions for spark submit:
 
-``` $ spark-submit \
+``` 
+$ spark-submit \
 --name Group 3 Final Project \
 --num-executors 64 \
 --py-files police_reports.py,three_one_one.py,vehicle_volume_count.py \
 main.py path/to/NYPD_Motor_Vehicle_Collisions.csv path/to/311_Service_Requests_from_2010_to_Present.csv \
-path/to/output_from_script_generate_vehicle_count_csv ```
+path/to/output_from_script_generate_vehicle_count_csv 
+```
 
 
 ## Instructions for standard python:
-``` $ python main.py path/to/NYPD_Motor_Vehicle_Collisions.csv path/to/311_Service_Requests_from_2010_to_Present.csv path/to/output_from_script_generate_vehicle_count_csv download```
+``` 
+$ python main.py path/to/NYPD_Motor_Vehicle_Collisions.csv path/to/311_Service_Requests_from_2010_to_Present.csv path/to/output_from_script_generate_vehicle_count_csv download
+```
 
 *"download" is an optional fourth argument to main.py. Leave it blank if you do not wish to produce any output. All output will be saved in a directory called FinalProjectOutputs.*
 
@@ -49,6 +53,6 @@ the output of that script is available in the Datasets folder.*
 
 ## Results
 
-* [Final Report] (/Documents/Kasakyan_James_Final_Report.pdf)
-* [Raw results data] (/FinalProjectOutputs/results/final_result) 
-* View the [final mapping] (https://jameskasakyan.cartodb.com/viz/a612e2d2-1b34-11e6-a856-0e3ff518bd15/public_map) 
+* [Final Report](/Documents/Kasakyan_James_Final_Report.pdf)
+* [Raw results data](/FinalProjectOutputs/results/final_result) 
+* View the [final mapping](https://jameskasakyan.cartodb.com/viz/a612e2d2-1b34-11e6-a856-0e3ff518bd15/public_map) 
